@@ -299,6 +299,10 @@ Region은 Flyway로만 들어오는 기준 데이터라 M1에 생성·수정 경
 
 **검증 규칙**
 
+검증은 **`Product.register` 팩토리에서 명시적으로 한다** (`User.create`와 같은 방식).
+아래 `@Size`/`@Max`는 어댑터의 요청 DTO에 붙는 값이다 — 사용자에게 즉시 피드백을 주기 위한
+것이고, 도메인 불변식은 팩토리가 지킨다.
+
 - Bean Validation과 DB 컬럼 길이를 **반드시 일치**시킨다. `@Size(max=100)`인데 `varchar(50)`이면 검증은 통과하고 DB에서 터진다
 - ⚠️ **이 일치를 `ddl-auto: validate`가 잡아주지 않는다.** 실측 확인: 엔티티 `@Column(length = 5)` ↔ DB `varchar(20)`으로 어긋나게 두어도 기동에 성공한다.
   validate는 테이블·컬럼의 **존재와 타입**만 본다(없는 컬럼은 `missing column`으로 즉시 실패). 길이는 사람이 맞춰야 한다
@@ -355,6 +359,8 @@ CREATE INDEX idx_product_list
   ON product (region_id, status, deleted_at, created_at DESC);
 ```
 
+⚠️ **이 인덱스는 아직 만들지 않았다.** `V20260909_08`은 PK와 FK만 만든다.
+
 이 인덱스가 성능 실험의 주인공이다. mock 20만 건에서 인덱스 없이 측정 → 생성 후 재측정.
 
 ---
@@ -386,6 +392,7 @@ PET, PLANT, BABY, TICKET, ETC
 
 - `unique(productId, sortOrder)`
 - 상품당 최대 장수 제한 (예: 10장) — 서비스 계층 검증
+- `url` → `varchar(500)`. 지금 쓰는 두 형태는 100자 안쪽이지만 S3 presigned URL을 대비한 여유다
 
 **설계 메모**
 
