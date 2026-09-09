@@ -168,7 +168,9 @@ CREATE UNIQUE INDEX uk_user_nickname
 **컬럼 길이**
 
 `code` → `varchar(10)`, `sido`/`sigungu`/`dong` → `varchar(20)`.
-엔티티의 `@Size`를 여기에 맞춘다.
+엔티티는 `@Column(length = ...)`로만 맞춘다. **Bean Validation은 붙이지 않는다** —
+Region은 Flyway로만 들어오는 기준 데이터라 M1에 생성·수정 경로가 없고,
+검증기가 호출될 자리가 없는 `@Size`는 죽은 애노테이션이 된다.
 
 **설계 메모**
 
@@ -224,6 +226,8 @@ CREATE UNIQUE INDEX uk_user_nickname
 **검증 규칙**
 
 - Bean Validation과 DB 컬럼 길이를 **반드시 일치**시킨다. `@Size(max=100)`인데 `varchar(50)`이면 검증은 통과하고 DB에서 터진다
+- ⚠️ **이 일치를 `ddl-auto: validate`가 잡아주지 않는다.** 실측 확인: 엔티티 `@Column(length = 5)` ↔ DB `varchar(20)`으로 어긋나게 두어도 기동에 성공한다.
+  validate는 테이블·컬럼의 **존재와 타입**만 본다(없는 컬럼은 `missing column`으로 즉시 실패). 길이는 사람이 맞춰야 한다
 - `title` → `varchar(100)`, `@Size(min=1, max=100)`
 - `description` → `varchar(2000)`, `@Size(min=1, max=2000)`
 - `price` → `@PositiveOrZero` + `@Max(100_000_000)` — 상한 1억원. 걸지 않으면 `int` 범위인 21억까지 들어간다
