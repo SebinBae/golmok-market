@@ -34,6 +34,14 @@ public class UserRegion {
     protected UserRegion() {
     }
 
+    public static UserRegion of(User user, Region region, Instant createdAt) {
+        UserRegion userRegion = new UserRegion();
+        userRegion.user = user;
+        userRegion.region = region;
+        userRegion.createdAt = createdAt;
+        return userRegion;
+    }
+
     public Long getId() {
         return id;
     }

@@ -30,6 +30,14 @@ public class User {
     protected User() {
     }
 
+    public static User create(String nickname, String phoneNumber, Instant createdAt) {
+        User user = new User();
+        user.nickname = nickname;
+        user.phoneNumber = phoneNumber;
+        user.createdAt = createdAt;
+        return user;
+    }
+
     public Long getId() {
         return id;
     }
