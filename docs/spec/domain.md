@@ -158,16 +158,24 @@ CREATE UNIQUE INDEX uk_user_nickname
 | 필드 | 타입 | 제약 | 설명 |
 |---|---|---|---|
 | id | Long | PK | |
-| code | String | NOT NULL, unique | 행정동 코드 |
-| sido | String | NOT NULL | 서울특별시 |
-| sigungu | String | NOT NULL | 강북구 |
-| dong | String | NOT NULL | 수유1동 |
+| code | String | NOT NULL, unique, 10자 | 행정동 코드 |
+| sido | String | NOT NULL, 최대 20자 | 서울특별시 |
+| sigungu | String | NOT NULL, 최대 20자 | 강북구 |
+| dong | String | NOT NULL, 최대 20자 | 수유1동 |
 | latitude | double | NOT NULL | 중심 위도 |
 | longitude | double | NOT NULL | 중심 경도 |
 
+**컬럼 길이**
+
+`code` → `varchar(10)`, `sido`/`sigungu`/`dong` → `varchar(20)`.
+엔티티의 `@Size`를 여기에 맞춘다.
+
 **설계 메모**
 
-- 초기 데이터는 **서울 강북구 행정동만** 넣는다 (13개 내외). 실제 목록과 코드는 행정안전부 행정동 코드를 확인해서 채울 것
+- 초기 데이터는 **서울 강북구 행정동만** 넣는다 (13개). 코드는 `V20260909_02__insert_gangbuk_regions.sql`에 있다.
+  ⚠️ 행정안전부 원본과 대조하지 않았다. **동결(M1 종료) 전에 한 번 확인할 것**
+- ⚠️ 좌표는 현재 전부 `0`이다. `(0, 0)`은 문법적으로 유효한 좌표라 `NOT NULL`로도 걸러지지 않는다.
+  **범위 설정 기능을 붙이기 전에 반드시 실제 좌표를 채울 것**
 - 좌표는 M1에서 쓰지 않는다. 범위 설정을 나중에 붙일 때를 위해 미리 넣어둔다
 - 이 데이터는 **Flyway 마이그레이션**에 넣는다 (mock이 아니라 기준 데이터)
 - 인접 관계 테이블은 만들지 않는다. 범위 설정은 좌표 기반으로 시작해 필요하면 사전 계산 방식으로 교체
