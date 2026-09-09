@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: golmok-api
+  config:
+    import: classpath:application-core.yml
+
+server:
+  port: 8080

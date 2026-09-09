@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: golmok-postgres
+    environment:
+      POSTGRES_DB: golmok
+      POSTGRES_USER: golmok
+      POSTGRES_PASSWORD: golmok
+    ports:
+      - "5432:5432"
+    volumes:
+      - golmok-pgdata:/var/lib/postgresql/data
+
+volumes:
+  golmok-pgdata:
