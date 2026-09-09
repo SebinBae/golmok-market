@@ -111,6 +111,20 @@ CREATE UNIQUE INDEX uk_user_nickname
 - `unique(provider, email)` where `provider = 'LOCAL'` — 이메일 중복 가입 방지
 - `provider = 'LOCAL'`이면 `email`과 `passwordHash`가 반드시 있어야 한다 (애플리케이션에서 검증)
 
+**컬럼 길이**
+
+`provider` → `varchar(20)`, `provider_id`/`email` → `varchar(255)`, `password_hash` → `varchar(72)`.
+
+`password_hash`가 60이 아닌 이유: Spring Security의 `DelegatingPasswordEncoder`는
+`{bcrypt}$2a$10$...`처럼 **알고리즘 접두사를 붙여 저장한다.** 8 + 60 = 68자라 60으로 잡으면
+가입 시점에 `value too long`으로 터진다. 72는 그 68에 여유를 둔 값이다.
+
+**`unique(provider, provider_id)`가 LOCAL을 제약하지 않는다**
+
+PostgreSQL은 유니크 제약에서 NULL을 서로 다른 값으로 본다.
+`LOCAL` 행은 `provider_id`가 NULL이므로 이 제약에 걸리지 않고 여러 개 공존한다. 의도한 동작이다 —
+`LOCAL`의 유일성은 `uk_user_credential_local_email` 부분 인덱스가 담당한다.
+
 **설계 메모**
 
 - 이메일을 User가 아닌 여기에 둔 이유는 **검증 여부를 인증수단별로 관리해야 하기 때문**이다. 소셜에서 받아온 이메일은 우리가 검증한 것이 아니므로 `emailVerified = false`이고, 비밀번호 재설정 메일을 그리로 보내면 계정 탈취 경로가 된다
@@ -253,6 +267,11 @@ private Category category;
 
 JPA 기본값이 `ORDINAL`이라 명시하지 않으면 DB에 0, 1, 2로 저장된다.
 나중에 enum 중간에 값을 하나 추가하면 **기존 데이터의 의미가 통째로 밀린다.**
+
+다행히 이건 `ddl-auto: validate`가 잡아준다. 실측 확인: `@Enumerated`를 빼면
+`ORDINAL`이 정수 컬럼을 기대하는데 DB는 `varchar`라
+`wrong column type encountered in column [provider]`로 기동이 막힌다.
+(같은 validate가 varchar **길이** 불일치는 못 잡는다 — 위 User 절 참고)
 
 **상태 전이**
 
