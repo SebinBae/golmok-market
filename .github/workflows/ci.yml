@@ -10,6 +10,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # 테스트가 실제 PostgreSQL에 붙는다. H2로 대체하면 부분 유니크 인덱스,
+    # timestamptz, identity 컬럼이 재현되지 않아 통과해도 보장하는 것이 없다.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: golmok
+          POSTGRES_USER: golmok
+          POSTGRES_PASSWORD: golmok
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U golmok -d golmok"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v4
 
