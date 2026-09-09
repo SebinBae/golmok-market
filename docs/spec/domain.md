@@ -56,9 +56,21 @@ User(seller) 1 ──< Product ──┘ (등록 시점 고정)
 |---|---|---|---|
 | id | Long | PK | |
 | nickname | String | NOT NULL, unique, 2~20자 | |
-| phoneNumber | String | NOT NULL, unique | 숫자만 저장 (하이픈 제거) |
+| phoneNumber | String | NOT NULL, unique, 11자 | 숫자만 저장 (하이픈 제거) |
 | createdAt | Instant | NOT NULL | |
 | deletedAt | Instant | nullable | 탈퇴 시각 |
+
+**컬럼 길이**
+
+`nickname` → `varchar(20)`, `phone_number` → `varchar(11)`.
+하한 2자는 DB로 걸 수 없으므로 앱에서 검증한다.
+`varchar(11)`이 하이픈 섞인 값(`010-1111-1111`, 13자)을 DB에서 거부한다 —
+"숫자만 저장" 규칙의 마지막 방어선이다.
+
+**시각 컬럼**
+
+`Instant` ↔ `timestamptz`. Hibernate 기본 매핑이 그대로 맞아서 `@Column` 타입 지정이 필요 없다.
+`created_at`에 `DEFAULT now()`는 걸지 않는다. 값은 애플리케이션이 채운다.
 
 **설계 메모**
 
