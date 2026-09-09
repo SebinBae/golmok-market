@@ -162,11 +162,32 @@ PostgreSQL은 유니크 제약에서 NULL을 서로 다른 값으로 본다.
 | id | Long | PK | |
 | phoneNumber | String | NOT NULL | |
 | codeHash | String | NOT NULL | 평문 저장 금지 |
-| purpose | Enum | NOT NULL | `FIND_EMAIL` (확장 여지) |
+| purpose | Enum | NOT NULL, **STRING 저장** | `SIGN_UP`, `FIND_EMAIL` |
 | expiresAt | Instant | NOT NULL | 발급 후 5분 |
 | usedAt | Instant | nullable | |
 | attemptCount | int | NOT NULL, default 0 | 무차별 대입 방어 |
 | createdAt | Instant | NOT NULL | |
+
+**컬럼 길이**
+
+`phone_number` → `varchar(11)` (users와 동일), `code_hash` → `varchar(72)`, `purpose` → `varchar(20)`.
+
+**`purpose`가 두 개인 이유**
+
+`AUTH-02`(가입 시 휴대폰 확인, A3)와 `AUTH-06`(아이디 찾기, A5)가 둘 다 이 테이블을 쓴다.
+값이 하나면 아이디 찾기용으로 받은 코드로 가입을 끝낼 수 있어 `purpose` 컬럼이 무의미해진다.
+
+**`code_hash`는 BCrypt로 해싱한다**
+
+비밀번호와 같은 `PasswordEncoder` 빈을 재사용한다. 6자리 숫자는 경우의 수가 100만뿐이라
+SHA-256 같은 빠른 해시로는 DB 유출 시 즉시 역산된다. BCrypt의 느림 자체가 방어다.
+검증은 코드 입력당 1회뿐이라 속도가 문제되지 않는다.
+
+**함정: 시도 횟수 증가가 롤백된다**
+
+틀린 코드에 `attemptCount`를 올리고 예외를 던지면, 기본 롤백 규칙이 그 증가분까지
+되돌려 무차별 대입 방어가 무력해진다. `@Transactional(noRollbackFor = IllegalStateException.class)`로 막는다.
+실측 확인: 이 설정을 빼면 5번 틀려도 `attempt_count`가 계속 0이다.
 
 **설계 메모**
 

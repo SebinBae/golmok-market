@@ -54,7 +54,7 @@ erDiagram
         bigint id PK
         varchar phone_number "FK 아님"
         varchar code_hash
-        varchar purpose "FIND_EMAIL"
+        varchar purpose "SIGN_UP | FIND_EMAIL"
         timestamptz expires_at "발급 후 5분"
         timestamptz used_at
         int attempt_count "5회 초과 시 폐기"
