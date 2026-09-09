@@ -79,8 +79,8 @@ class VerificationCodeServiceTest {
                 .getAttemptCount()).isEqualTo(1);
     }
 
+    /** 시도 횟수가 별도 트랜잭션에서 커밋되므로 이 테스트도 트랜잭션 밖이어야 한다. */
     @Test
-    @Transactional
     void 시도_횟수를_초과하면_더_시도할_수_없다() {
         String code = issueAndCaptureCode(VerificationPurpose.SIGN_UP);
 

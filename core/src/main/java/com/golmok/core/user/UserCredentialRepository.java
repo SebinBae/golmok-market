@@ -8,4 +8,6 @@ public interface UserCredentialRepository extends JpaRepository<UserCredential, 
     boolean existsByProviderAndEmail(AuthProvider provider, String email);
 
     Optional<UserCredential> findByProviderAndEmail(AuthProvider provider, String email);
+
+    Optional<UserCredential> findByUserAndProvider(User user, AuthProvider provider);
 }

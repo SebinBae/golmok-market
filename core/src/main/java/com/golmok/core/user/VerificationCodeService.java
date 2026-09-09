@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-// 코드가 틀렸을 때 attemptCount 증가를 살려야 한다. 기본 롤백 규칙이면
-// 예외와 함께 증가분이 되돌아가 무차별 대입 방어가 무력해진다.
-@Transactional(noRollbackFor = IllegalStateException.class)
+@Transactional
 public class VerificationCodeService {
 
     private static final Duration TTL = Duration.ofMinutes(5);
@@ -19,14 +17,17 @@ public class VerificationCodeService {
     private static final int CODE_BOUND = 1_000_000;
 
     private final VerificationCodeRepository verificationCodeRepository;
+    private final VerificationAttemptRecorder attemptRecorder;
     private final PasswordEncoder passwordEncoder;
     private final SmsSender smsSender;
     private final SecureRandom random = new SecureRandom();
 
     public VerificationCodeService(VerificationCodeRepository verificationCodeRepository,
+                                   VerificationAttemptRecorder attemptRecorder,
                                    PasswordEncoder passwordEncoder,
                                    SmsSender smsSender) {
         this.verificationCodeRepository = verificationCodeRepository;
+        this.attemptRecorder = attemptRecorder;
         this.passwordEncoder = passwordEncoder;
         this.smsSender = smsSender;
     }
@@ -61,7 +62,7 @@ public class VerificationCodeService {
             throw new IllegalStateException("시도 횟수를 초과했습니다. 인증번호를 다시 요청해주세요.");
         }
         if (!passwordEncoder.matches(rawCode, code.getCodeHash())) {
-            code.recordFailedAttempt();
+            attemptRecorder.recordFailedAttempt(code.getId());
             throw new IllegalStateException("인증번호가 일치하지 않습니다.");
         }
 
