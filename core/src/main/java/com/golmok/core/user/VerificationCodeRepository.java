@@ -11,4 +11,7 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
 
     boolean existsByPhoneNumberAndPurposeAndCreatedAtAfter(
             String phoneNumber, VerificationPurpose purpose, Instant createdAt);
+
+    boolean existsByPhoneNumberAndPurposeAndUsedAtAfter(
+            String phoneNumber, VerificationPurpose purpose, Instant usedAt);
 }

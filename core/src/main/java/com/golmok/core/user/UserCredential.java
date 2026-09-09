@@ -47,6 +47,17 @@ public class UserCredential {
     protected UserCredential() {
     }
 
+    public static UserCredential createLocal(User user, String email, String passwordHash, Instant createdAt) {
+        UserCredential credential = new UserCredential();
+        credential.user = user;
+        credential.provider = AuthProvider.LOCAL;
+        credential.email = email;
+        credential.passwordHash = passwordHash;
+        credential.emailVerified = false;
+        credential.createdAt = createdAt;
+        return credential;
+    }
+
     public Long getId() {
         return id;
     }

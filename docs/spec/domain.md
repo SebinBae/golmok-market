@@ -189,6 +189,14 @@ SHA-256 같은 빠른 해시로는 DB 유출 시 즉시 역산된다. BCrypt의 
 되돌려 무차별 대입 방어가 무력해진다. `@Transactional(noRollbackFor = IllegalStateException.class)`로 막는다.
 실측 확인: 이 설정을 빼면 5번 틀려도 `attempt_count`가 계속 0이다.
 
+**인증 완료는 core가 확인한다**
+
+가입(`SignUpService`)은 어댑터를 믿지 않고, 해당 번호로 **소비된(`used_at`이 찍힌) `SIGN_UP` 코드가
+최근 10분 안에 있는지**를 직접 본다.
+
+`web`은 세션으로 A3 통과를 기억하지만 `api`는 그런 상태가 없다.
+core가 보지 않으면 아무 번호나 넣어 인증 없이 가입할 수 있다.
+
 **설계 메모**
 
 - 코드가 6자리 숫자면 경우의 수가 100만이라 재시도를 막지 않으면 뚫린다. `attemptCount` 5회 초과 시 폐기
